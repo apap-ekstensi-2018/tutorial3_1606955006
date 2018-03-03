@@ -2,6 +2,7 @@ package com.example.tutorial3.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -10,6 +11,7 @@ import com.example.tutorial3.service.InMemoryStudentService;
 import com.example.tutorial3.service.StudentService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class StudentController {
@@ -39,4 +41,51 @@ public class StudentController {
 		model.addAttribute("students", students);
 		return "viewall";
 	}
+	
+	@RequestMapping({"/student/view/", "student/view/{npm}"})
+	public String viewNpm(@PathVariable Optional<String> npm, Model model) {
+		if(npm.isPresent()) {
+			StudentModel student = studentService.selectStudent(npm.get());
+			if(student == null) {
+				model.addAttribute("npm", npm);
+				return "notFound";
+			} else {
+				if(npm.get().equalsIgnoreCase(student.getNpm())){
+					model.addAttribute("student", student);
+					return "view";
+				}
+				else {
+					model.addAttribute("npm", npm);
+					return "notFound";
+				}
+			} 
+		} else {
+			model.addAttribute("npm", npm);
+			return "notFound";
+		}
+	}
+	
+	@RequestMapping({"/student/delete/", "student/delete/{npm}"})
+	public String delete(@PathVariable Optional<String> npm, Model model) {
+		if(npm.isPresent()) {
+			StudentModel student = studentService.selectStudent(npm.get());
+			if(student == null) {
+				model.addAttribute("npm", npm);
+				return "notFound";
+			} else {
+				if(npm.get().equalsIgnoreCase(student.getNpm())){
+					studentService.deleteStudent(npm.get());
+					return "delete";
+				}
+				else {
+					model.addAttribute("npm", npm);
+					return "notFound";
+				}
+			} 
+		} else {
+			model.addAttribute("npm", npm);
+			return "notFound";
+		}
+	}
+	
 }
